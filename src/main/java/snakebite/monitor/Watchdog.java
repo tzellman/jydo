@@ -23,6 +23,8 @@ public abstract class Watchdog<T_Collection, T_Item>
 
     protected boolean alive;
 
+    protected boolean checking;
+
     private Lock startStopLock;
 
     public Watchdog()
@@ -32,6 +34,7 @@ public abstract class Watchdog<T_Collection, T_Item>
         listeners = new HashSet<CollectionListener<T_Item>>();
         waitSeconds = MIN_WAIT;
         startStopLock = new ReentrantLock();
+        checking = false;
     }
 
     public void watch(T_Collection... toWatch)
@@ -53,23 +56,6 @@ public abstract class Watchdog<T_Collection, T_Item>
 
     protected abstract Watched<T_Collection, T_Item> newWatched(T_Collection t);
 
-    // public void watch(URL... urls)
-    // {
-    // for (URL u : urls)
-    // {
-    // watch(Utils.urlToFile(u));
-    // }
-    // }
-    //
-    // public void watch(String... pathnames)
-    // {
-    // ClassLoader classLoader = getClass().getClassLoader();
-    // for (String p : pathnames)
-    // {
-    // watch(classLoader.getResource(p));
-    // }
-    // }
-
     public void setWaitSeconds(int seconds)
     {
         if (seconds < MIN_WAIT)
@@ -78,31 +64,128 @@ public abstract class Watchdog<T_Collection, T_Item>
             waitSeconds = seconds;
     }
 
-    public void addFileChangeListener(CollectionListener<T_Item> listener)
+    public void addCollectionListener(CollectionListener<T_Item> listener)
     {
         listeners.add(listener);
     }
 
-    public void removeFileChangeListener(CollectionListener<T_Item> listener)
+    public void removeCollectionListener(CollectionListener<T_Item> listener)
     {
         listeners.remove(listener);
     }
 
     public void startWatching()
     {
+        startWatching(false);
+    }
+
+    /**
+     * 
+     * @param block
+     *            if True, the method blocks until all watched items are first
+     *            checked
+     */
+    public void startWatching(boolean block)
+    {
         startStopLock.lock();
         try
         {
-            if (watchThread == null)
+            if (watchThread == null || !watchThread.isAlive())
             {
                 watchThread = new Thread(makeRunnable());
                 alive = true;
-                watchThread.start();
             }
         }
         finally
         {
             startStopLock.unlock();
+        }
+
+        if (!watchThread.isAlive())
+        {
+            if (block)
+            {
+                // this allows the caller to block until everything is
+                // checked first
+                check();
+            }
+            watchThread.start();
+        }
+    }
+
+    public void check()
+    {
+        check(listeners.toArray(new CollectionListener[0]));
+    }
+
+    public void check(CollectionListener<T_Item>... listeners)
+    {
+        startStopLock.lock();
+        checking = true;
+
+        try
+        {
+            List<T_Item> added = new LinkedList<T_Item>();
+            List<T_Item> removed = new LinkedList<T_Item>();
+            List<T_Item> modified = new LinkedList<T_Item>();
+            synchronized (watched)
+            {
+                for (Watched<T_Collection, T_Item> item : watched)
+                {
+                    item.isModified(added, modified, removed);
+                }
+
+                for (T_Item item : added)
+                {
+                    for (CollectionListener<T_Item> listener : listeners)
+                    {
+                        try
+                        {
+                            listener.itemAdded(item);
+                        }
+                        catch (Throwable e)
+                        {
+                            // TODO log this
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                for (T_Item item : modified)
+                {
+                    for (CollectionListener<T_Item> listener : listeners)
+                    {
+                        try
+                        {
+                            listener.itemUpdated(item);
+                        }
+                        catch (Throwable e)
+                        {
+                            // TODO log this
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                for (T_Item item : removed)
+                {
+                    for (CollectionListener<T_Item> listener : listeners)
+                    {
+                        try
+                        {
+                            listener.itemRemoved(item);
+                        }
+                        catch (Throwable e)
+                        {
+                            // TODO log this
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            startStopLock.unlock();
+            checking = false;
         }
     }
 
@@ -112,7 +195,7 @@ public abstract class Watchdog<T_Collection, T_Item>
         try
         {
             alive = false;
-            // watchThread = null;
+            watchThread = null;
             // might still not be thread safe
         }
         finally
@@ -130,15 +213,7 @@ public abstract class Watchdog<T_Collection, T_Item>
 
     public boolean isWatching()
     {
-        startStopLock.lock();
-        try
-        {
-            return watchThread != null && alive;
-        }
-        finally
-        {
-            startStopLock.unlock();
-        }
+        return (watchThread != null && alive) || checking;
     }
 
     private Runnable makeRunnable()
@@ -147,67 +222,9 @@ public abstract class Watchdog<T_Collection, T_Item>
         {
             public void run()
             {
-                List<T_Item> added = new LinkedList<T_Item>();
-                List<T_Item> removed = new LinkedList<T_Item>();
-                List<T_Item> modified = new LinkedList<T_Item>();
                 do
                 {
-                    added.clear();
-                    removed.clear();
-                    modified.clear();
-                    synchronized (watched)
-                    {
-                        for (Watched<T_Collection, T_Item> item : watched)
-                        {
-                            item.isModified(added, modified, removed);
-                        }
-
-                        for (T_Item item : added)
-                        {
-                            for (CollectionListener<T_Item> listener : listeners)
-                            {
-                                try
-                                {
-                                    listener.itemAdded(item);
-                                }
-                                catch (Throwable e)
-                                {
-                                    // TODO log this
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                        for (T_Item item : modified)
-                        {
-                            for (CollectionListener<T_Item> listener : listeners)
-                            {
-                                try
-                                {
-                                    listener.itemUpdated(item);
-                                }
-                                catch (Throwable e)
-                                {
-                                    // TODO log this
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                        for (T_Item item : removed)
-                        {
-                            for (CollectionListener<T_Item> listener : listeners)
-                            {
-                                try
-                                {
-                                    listener.itemRemoved(item);
-                                }
-                                catch (Throwable e)
-                                {
-                                    // TODO log this
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    }
+                    check();
                     try
                     {
                         Thread.sleep(waitSeconds * 1000);

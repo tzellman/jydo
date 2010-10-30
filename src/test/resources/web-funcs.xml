@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+	<display-name>Test</display-name>
+	<servlet>
+		<servlet-name>JythonServlet</servlet-name>
+		<servlet-class>snakebite.web.jython.JythonServlet</servlet-class>
+		<init-param>
+			<param-name>watch</param-name>
+			<param-value>funcs.py</param-value>
+		</init-param>
+		<init-param>
+			<param-name>checkEvery</param-name>
+			<param-value>60</param-value>
+		</init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>JythonServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+</web-app>

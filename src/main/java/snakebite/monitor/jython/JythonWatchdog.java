@@ -23,19 +23,27 @@ public class JythonWatchdog extends FileWatchdog implements
 {
     private static class JythonResource extends WatchedFile
     {
+        String source;
+
         PyCode pyCode;
 
         boolean notifiedLoad = false;
 
-        public JythonResource(File file, PyCode pyCode)
+        public JythonResource(File file, String source, PyCode pyCode)
         {
             super(file);
+            this.source = source;
             this.pyCode = pyCode;
         }
 
         public PyCode getPyCode()
         {
             return pyCode;
+        }
+
+        public String getSource()
+        {
+            return source;
         }
     }
 
@@ -51,7 +59,7 @@ public class JythonWatchdog extends FileWatchdog implements
         jythonFiles = new TreeMap<String, JythonResource>();
         jythonFileListeners = Collections
                 .synchronizedSet(new HashSet<JythonFileListener>());
-        super.addFileChangeListener(this);
+        super.addCollectionListener(this);
     }
 
     @Override
@@ -146,7 +154,7 @@ public class JythonWatchdog extends FileWatchdog implements
             JythonResource jythonFile = jythonFiles.get(filePath);
             PyCode pyCode = jythonFile != null ? jythonFile.pyCode : null;
 
-            if (jythonFile == null || !jythonFile.isModified())
+            if (jythonFile == null || jythonFile.isModified())
             {
                 String codeString = FileUtils.readFileToString(file);
                 synchronized (python)
@@ -156,11 +164,14 @@ public class JythonWatchdog extends FileWatchdog implements
 
                 if (jythonFile == null)
                 {
-                    jythonFile = new JythonResource(file, pyCode);
+                    jythonFile = new JythonResource(file, codeString, pyCode);
                     jythonFiles.put(filePath, jythonFile);
                 }
                 else
+                {
+                    jythonFile.source = codeString;
                     jythonFile.pyCode = pyCode;
+                }
 
                 // if we are currently "watching"
                 if (isWatching())
@@ -173,22 +184,27 @@ public class JythonWatchdog extends FileWatchdog implements
         }
     }
 
-    @Override
-    public void startWatching()
+    // @Override
+    // public void startWatching()
+    // {
+    // super.startWatching();
+    // synchronized (jythonFiles)
+    // {
+    // for (JythonResource jythonFile : jythonFiles.values())
+    // {
+    // if (!jythonFile.notifiedLoad)
+    // {
+    // // notify listeners of the initial load
+    // jythonFile.notifiedLoad = true;
+    // notifyFileModified(jythonFile.getWatched());
+    // }
+    // }
+    // }
+    // }
+
+    public void check()
     {
-        super.startWatching();
-        synchronized (jythonFiles)
-        {
-            for (JythonResource jythonFile : jythonFiles.values())
-            {
-                if (!jythonFile.notifiedLoad)
-                {
-                    // notify listeners of the initial load
-                    jythonFile.notifiedLoad = true;
-                    notifyFileModified(jythonFile.getWatched());
-                }
-            }
-        }
+        check(this);
     }
 
     public void addJythonFileListener(JythonFileListener listener)

@@ -25,7 +25,14 @@ public abstract class FileWatchdog extends Watchdog<File, File>
         ClassLoader classLoader = getClass().getClassLoader();
         for (String p : pathnames)
         {
-            watch(classLoader.getResource(p));
+            try
+            {
+                watch(classLoader.getResource(p));
+            }
+            catch (Exception e)
+            {
+                watch(new File(p));
+            }
         }
     }
 }
