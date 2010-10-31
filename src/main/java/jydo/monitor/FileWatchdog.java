@@ -1,9 +1,10 @@
-package snakebite.monitor;
+package jydo.monitor;
 
 import java.io.File;
 import java.net.URL;
 
-import snakebite.Utils;
+import jydo.Utils;
+
 
 public abstract class FileWatchdog extends Watchdog<File, File>
 {

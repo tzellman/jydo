@@ -1,4 +1,4 @@
-package snakebite.monitor;
+package jydo.monitor;
 
 import java.io.File;
 import java.util.Collection;

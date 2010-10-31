@@ -1,4 +1,4 @@
-package snakebite.monitor.jython;
+package jydo.monitor.jython;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,15 +8,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import jydo.monitor.CollectionListener;
+import jydo.monitor.FileWatchdog;
+import jydo.monitor.WatchedFile;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.python.core.PyCode;
 import org.python.core.PyDictionary;
 import org.python.util.PythonInterpreter;
 
-import snakebite.monitor.CollectionListener;
-import snakebite.monitor.FileWatchdog;
-import snakebite.monitor.WatchedFile;
 
 public class JythonWatchdog extends FileWatchdog implements
         CollectionListener<File>

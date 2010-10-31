@@ -1,4 +1,4 @@
-package snakebite.web.jython;
+package jydo.web.jython;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;

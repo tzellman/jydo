@@ -1,4 +1,4 @@
-package snakebite.monitor;
+package jydo.monitor;
 
 /**
  * Interface for listening to changes made to some sort of Collection of items

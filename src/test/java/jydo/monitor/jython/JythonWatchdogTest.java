@@ -1,8 +1,11 @@
-package snakebite.monitor.jython;
+package jydo.monitor.jython;
 
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+
+import jydo.monitor.jython.JythonFileAdapter;
+import jydo.monitor.jython.JythonWatchdog;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.junit.Assert;
@@ -10,8 +13,6 @@ import org.junit.Test;
 import org.python.core.PyCode;
 import org.python.util.PythonInterpreter;
 
-import snakebite.monitor.jython.JythonFileAdapter;
-import snakebite.monitor.jython.JythonWatchdog;
 
 public class JythonWatchdogTest
 {

@@ -1,8 +1,12 @@
-package snakebite.monitor.jython;
+package jydo.monitor.jython;
 
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+
+import jydo.monitor.jython.JythonFileAdapter;
+import jydo.monitor.jython.JythonUtils;
+import jydo.monitor.jython.JythonWatchdog;
 
 import org.junit.Test;
 import org.python.core.PyClass;

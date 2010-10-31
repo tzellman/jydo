@@ -3,7 +3,7 @@
 	<display-name>Test</display-name>
 	<servlet>
 		<servlet-name>JythonServlet</servlet-name>
-		<servlet-class>snakebite.web.jython.JythonServlet</servlet-class>
+		<servlet-class>jydo.web.jython.JythonServlet</servlet-class>
 		<init-param>
 			<param-name>watch</param-name>
 			<param-value>funcs.py</param-value>

@@ -1,4 +1,4 @@
-package snakebite;
+package jydo;
 
 import java.io.File;
 import java.io.IOException;

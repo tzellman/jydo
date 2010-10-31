@@ -1,4 +1,4 @@
-package snakebite.monitor.jython;
+package jydo.monitor.jython;
 
 import java.util.Iterator;
 import java.util.LinkedList;

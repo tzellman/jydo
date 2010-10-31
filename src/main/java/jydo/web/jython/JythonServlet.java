@@ -1,4 +1,4 @@
-package snakebite.web.jython;
+package jydo.web.jython;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +20,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.http.HTTPException;
 
+import jydo.monitor.jython.JythonFileListener;
+import jydo.monitor.jython.JythonUtils;
+import jydo.monitor.jython.JythonWatchdog;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.NotNullPredicate;
@@ -36,9 +40,6 @@ import org.python.core.PyObjectDerived;
 import org.python.core.PyString;
 import org.python.util.PythonInterpreter;
 
-import snakebite.monitor.jython.JythonFileListener;
-import snakebite.monitor.jython.JythonUtils;
-import snakebite.monitor.jython.JythonWatchdog;
 
 import com.meterware.httpunit.HttpException;
 
