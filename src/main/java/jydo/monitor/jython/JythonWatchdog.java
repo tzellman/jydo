@@ -18,7 +18,6 @@ import org.python.core.PyCode;
 import org.python.core.PyDictionary;
 import org.python.util.PythonInterpreter;
 
-
 public class JythonWatchdog extends FileWatchdog implements
         CollectionListener<File>
 {

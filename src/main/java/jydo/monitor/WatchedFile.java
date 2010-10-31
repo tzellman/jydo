@@ -10,21 +10,23 @@ import java.util.Map.Entry;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
-public class WatchedFile extends Watched<File, File>
+public class WatchedFile implements Watched<File>
 {
     private Long lastTouched = null;
 
     private Map<String, Long> fileList = null;
 
+    private File watchedFile;
+
     public WatchedFile(File file)
     {
-        super(file);
+        this.watchedFile = file;
     }
 
     @Override
-    public synchronized boolean isModified(Collection<File> added,
-                                           Collection<File> modified,
-                                           Collection<File> removed)
+    public synchronized boolean checkForChanges(Collection<File> added,
+                                                Collection<File> modified,
+                                                Collection<File> removed)
     {
         boolean changed = false;
 
@@ -58,10 +60,9 @@ public class WatchedFile extends Watched<File, File>
             }
         }
 
-        File file = getWatched();
-        if (file.isDirectory())
+        if (watchedFile.isDirectory())
         {
-            Collection<File> currentList = FileUtils.listFiles(file,
+            Collection<File> currentList = FileUtils.listFiles(watchedFile,
                     FileFilterUtils.trueFileFilter(),
                     FileFilterUtils.falseFileFilter());
 
@@ -81,20 +82,20 @@ public class WatchedFile extends Watched<File, File>
         }
         else
         {
-            if (file.exists())
+            if (watchedFile.exists())
             {
-                long lastModified = file.lastModified();
+                long lastModified = watchedFile.lastModified();
                 if (lastTouched == null)
                 {
                     if (added != null)
-                        added.add(file);
+                        added.add(watchedFile);
                     lastTouched = lastModified;
                     changed = true;
                 }
                 else if (lastModified > lastTouched)
                 {
                     if (modified != null)
-                        modified.add(file);
+                        modified.add(watchedFile);
                     lastTouched = lastModified;
                     changed = true;
                 }
@@ -104,12 +105,17 @@ public class WatchedFile extends Watched<File, File>
             else
             {
                 if (removed != null)
-                    removed.add(file);
+                    removed.add(watchedFile);
                 lastTouched = null; // mark that we recognized it's gone
                 changed = true;
             }
         }
         return changed;
+    }
+
+    public boolean isModified()
+    {
+        return checkForChanges(null, null, null);
     }
 
 }

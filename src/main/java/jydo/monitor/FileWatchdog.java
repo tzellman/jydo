@@ -5,10 +5,12 @@ import java.net.URL;
 
 import jydo.Utils;
 
-
+/**
+ * A Watchdog implementation that watches a set of Files.
+ */
 public abstract class FileWatchdog extends Watchdog<File, File>
 {
-    protected Watched<File, File> newWatched(File file)
+    protected Watched<File> newWatched(File file)
     {
         return new WatchedFile(file);
     }
